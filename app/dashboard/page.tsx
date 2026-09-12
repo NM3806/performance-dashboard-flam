@@ -5,6 +5,8 @@ import LineChart from '@/components/charts/LineChart';
 import BarChart from '@/components/charts/BarChart';
 import ScatterPlot from '@/components/charts/ScatterPlot';
 import Heatmap from '@/components/charts/Heatmap';
+import TimeRangeSelector from '@/components/controls/TimeRangeSelector';
+import FilterPanel from '@/components/controls/FilterPanel';
 
 export default function DashboardPage() {
   return (
@@ -17,22 +19,9 @@ export default function DashboardPage() {
         <LineChart />
       </section>
 
-      {/* Time controls placeholder */}
+      {/* Time controls */}
       <section className="dashboard-section">
-        <div className="controls-bar">
-          <div className="control-group">
-            <span className="control-label">Time range</span>
-            <button className="control-button active">1h</button>
-            <button className="control-button">6h</button>
-            <button className="control-button">24h</button>
-          </div>
-          <div className="control-group">
-            <span className="control-label">Aggregation</span>
-            <button className="control-button active">1min</button>
-            <button className="control-button">5min</button>
-            <button className="control-button">1hour</button>
-          </div>
-        </div>
+        <TimeRangeSelector />
       </section>
 
       {/* Secondary charts */}
@@ -61,13 +50,13 @@ export default function DashboardPage() {
 
       <hr className="section-divider" />
 
-      {/* Data controls placeholder */}
+      {/* Data controls */}
       <section className="dashboard-section">
         <div className="section-label">Data Controls</div>
         <div className="controls-bar">
           <div className="control-group">
             <span className="control-label">Categories</span>
-            <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Phase 6</span>
+            <FilterPanel />
           </div>
         </div>
       </section>

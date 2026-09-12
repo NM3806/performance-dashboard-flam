@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
 import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
@@ -14,9 +14,11 @@ import {
   computeBounds,
 } from '@/lib/canvasUtils';
 
-// Line chart — renders time-series lines per category on canvas
+// Line chart with zoom/pan support
 const LineChart = React.memo(function LineChart() {
   const { dataRef, dataVersion, filterState, categories } = useData();
+  const isDragging = useRef(false);
+  const lastPointer = useRef({ x: 0, y: 0 });
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, dim: ChartDimensions, transform: ViewTransform) => {
@@ -25,22 +27,18 @@ const LineChart = React.memo(function LineChart() {
       const data = dataRef.current;
       if (data.length === 0) return;
 
-      // Filter by selected categories and time range
       const { categories: selectedCats, timeRange } = filterState;
       const filtered = filterData(data, selectedCats, timeRange);
       if (filtered.length === 0) return;
 
-      // Compute bounds
       const timestamps = filtered.map((p) => p.timestamp);
       const values = filtered.map((p) => p.value);
       const tBounds = computeBounds(timestamps);
       const vBounds = computeBounds(values);
 
-      // Draw axes
       drawXAxis(ctx, dim, tBounds.min, tBounds.max, transform);
       drawYAxis(ctx, dim, vBounds.min, vBounds.max, transform);
 
-      // Group by category and draw lines
       const plotLeft = dim.padding.left;
       const plotRight = dim.width - dim.padding.right;
       const plotTop = dim.padding.top;
@@ -55,7 +53,6 @@ const LineChart = React.memo(function LineChart() {
         const catPoints = filtered.filter((p) => p.category === cat);
         if (catPoints.length < 2) continue;
 
-        // Sort by timestamp
         catPoints.sort((a, b) => a.timestamp - b.timestamp);
 
         ctx.strokeStyle = getCategoryColor(cat, categories);
@@ -63,7 +60,6 @@ const LineChart = React.memo(function LineChart() {
         ctx.beginPath();
 
         let started = false;
-        // Downsample: skip points that map to the same pixel
         let lastPx = -1;
         for (let i = 0; i < catPoints.length; i++) {
           const px = Math.round(mapX(catPoints[i].timestamp, tBounds.min, tBounds.max, dim, transform));
@@ -86,22 +82,93 @@ const LineChart = React.memo(function LineChart() {
     [dataRef, filterState, categories]
   );
 
-  const { canvasRef, containerRef } = useChartRenderer({
+  const { canvasRef, containerRef, transform, requestRender } = useChartRenderer({
     render,
     deps: [dataVersion, filterState],
   });
 
+  // Zoom via wheel
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function handleWheel(e: WheelEvent) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const t = transform.current;
+      t.scaleX = Math.max(0.5, Math.min(20, t.scaleX * delta));
+      t.scaleY = Math.max(0.5, Math.min(20, t.scaleY * delta));
+      requestRender();
+    }
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [containerRef, transform, requestRender]);
+
+  // Pan via pointer drag
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function handlePointerDown(e: PointerEvent) {
+      isDragging.current = true;
+      lastPointer.current = { x: e.clientX, y: e.clientY };
+      container!.setPointerCapture(e.pointerId);
+    }
+
+    function handlePointerMove(e: PointerEvent) {
+      if (!isDragging.current) return;
+      const dx = e.clientX - lastPointer.current.x;
+      const dy = e.clientY - lastPointer.current.y;
+      lastPointer.current = { x: e.clientX, y: e.clientY };
+
+      const t = transform.current;
+      t.offsetX += dx / t.scaleX;
+      t.offsetY += dy / t.scaleY;
+      requestRender();
+    }
+
+    function handlePointerUp() {
+      isDragging.current = false;
+    }
+
+    container.addEventListener('pointerdown', handlePointerDown);
+    container.addEventListener('pointermove', handlePointerMove);
+    container.addEventListener('pointerup', handlePointerUp);
+    container.addEventListener('pointercancel', handlePointerUp);
+
+    return () => {
+      container.removeEventListener('pointerdown', handlePointerDown);
+      container.removeEventListener('pointermove', handlePointerMove);
+      container.removeEventListener('pointerup', handlePointerUp);
+      container.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [containerRef, transform, requestRender]);
+
+  // Reset zoom/pan button
+  function handleReset() {
+    transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
+    requestRender();
+  }
+
   return (
     <div className="chart-area primary-chart">
-      <div className="chart-title">Line Chart</div>
-      <div ref={containerRef} style={{ position: 'relative', flex: 1, minHeight: '280px' }}>
+      <div className="chart-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>Line Chart</span>
+        <button className="control-button" onClick={handleReset} style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
+          Reset view
+        </button>
+      </div>
+      <div
+        ref={containerRef}
+        style={{ position: 'relative', flex: 1, minHeight: '280px', cursor: isDragging.current ? 'grabbing' : 'grab' }}
+      >
         <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>
     </div>
   );
 });
 
-// Helper: filter data by categories and time range
 function filterData(
   data: DataPoint[],
   categories: string[],
