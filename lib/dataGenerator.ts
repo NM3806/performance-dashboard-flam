@@ -1,6 +1,6 @@
 import { DataPoint, AggregatedDataPoint, AggregationPeriod } from './types';
 
-const CATEGORIES = ['cpu', 'memory', 'network', 'disk', 'latency'];
+const CATEGORIES = ['Series A', 'Series B', 'Series C', 'Series D', 'Series E'];
 
 // Generate a single data point with realistic noise
 function generatePoint(timestamp: number, category: string, baseValue: number): DataPoint {

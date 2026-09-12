@@ -9,6 +9,8 @@ const STREAM_INTERVAL_MS = 100;
 interface UseDataStreamOptions {
   enabled: boolean;
   maxPoints: number;
+  intervalMs?: number;
+  batchSize?: number;
   onNewPoint?: (point: DataPoint) => void;
 }
 
@@ -16,22 +18,26 @@ interface UseDataStreamResult {
   isStreaming: boolean;
 }
 
-// Hook that generates new data points every 100ms and appends to data ref
+// Hook that generates new data points and appends to data ref
 export function useDataStream(
   dataRef: React.MutableRefObject<DataPoint[]>,
   options: UseDataStreamOptions
 ): UseDataStreamResult {
-  const { enabled, maxPoints, onNewPoint } = options;
+  const { enabled, maxPoints, intervalMs = 100, batchSize = 1, onNewPoint } = options;
   const [isStreaming, setIsStreaming] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tick = useCallback(() => {
     const t0 = performance.now();
-    const point = generateStreamPoint(Date.now());
     const data = dataRef.current;
 
-    // Append new point
-    data.push(point);
+    for (let i = 0; i < batchSize; i++) {
+      const point = generateStreamPoint(Date.now());
+      data.push(point);
+      if (onNewPoint && i === batchSize - 1) {
+        onNewPoint(point);
+      }
+    }
 
     // Trim from front if over limit (sliding window)
     if (data.length > maxPoints) {
@@ -39,15 +45,12 @@ export function useDataStream(
       data.splice(0, excess);
     }
 
-    if (onNewPoint) {
-      onNewPoint(point);
-    }
     globalPerfMetrics.dataProcessingTime = performance.now() - t0;
-  }, [dataRef, maxPoints, onNewPoint]);
+  }, [dataRef, maxPoints, batchSize, onNewPoint]);
 
   useEffect(() => {
     if (enabled) {
-      intervalRef.current = setInterval(tick, STREAM_INTERVAL_MS);
+      intervalRef.current = setInterval(tick, intervalMs);
       setIsStreaming(true);
     } else {
       if (intervalRef.current) {
@@ -63,7 +66,7 @@ export function useDataStream(
         intervalRef.current = null;
       }
     };
-  }, [enabled, tick]);
+  }, [enabled, intervalMs, tick]);
 
   return { isStreaming };
 }

@@ -21,12 +21,21 @@ interface DataContextValue {
   // Filter state
   filterState: FilterState;
   setSelectedCategories: (categories: string[]) => void;
+  clearFilters: () => void;
   setTimeRange: (range: TimeRange | null) => void;
   setAggregation: (period: AggregationPeriod) => void;
+
+  // View reset
+  resetViewVersion: number;
+  resetView: () => void;
 
   // Stream control
   isStreaming: boolean;
   setStreamingEnabled: (enabled: boolean) => void;
+
+  // Stress test mode
+  stressMode: boolean;
+  setStressMode: (enabled: boolean) => void;
 
   // Data load control
   dataPointTarget: number;
@@ -46,7 +55,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const dataRef = useRef<DataPoint[]>([]);
   const [dataVersion, setDataVersion] = useState(0);
   const [streamingEnabled, setStreamingEnabled] = useState(true);
+  const [stressMode, setStressMode] = useState(false);
   const [dataPointTarget, setDataPointTarget] = useState(DEFAULT_POINT_COUNT);
+  const [resetViewVersion, setResetViewVersion] = useState(0);
 
   const categories = useMemo(() => getCategories(), []);
 
@@ -66,20 +77,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setDataVersion((v) => v + 1);
   }, []); // only on mount
 
-  // Real-time streaming — notify consumers every ~500ms to avoid excessive re-renders
+  // Real-time streaming — notify consumers regularly to avoid excessive re-renders
   const updateTickRef = useRef(0);
   const handleNewPoint = useCallback(() => {
     updateTickRef.current++;
-    // Batch state updates: only bump version every 5 ticks (500ms at 100ms interval)
-    if (updateTickRef.current >= 5) {
+    // In stress mode, update version every 2 ticks (~32ms); in normal mode every 5 ticks (500ms)
+    const threshold = stressMode ? 2 : 5;
+    if (updateTickRef.current >= threshold) {
       updateTickRef.current = 0;
       setDataVersion((v) => v + 1);
     }
-  }, []);
+  }, [stressMode]);
 
   const { isStreaming } = useDataStream(dataRef, {
     enabled: streamingEnabled,
     maxPoints: dataPointTarget,
+    intervalMs: stressMode ? 16 : 100,
+    batchSize: stressMode ? 5 : 1,
     onNewPoint: handleNewPoint,
   });
 
@@ -87,12 +101,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setFilterState((prev) => ({ ...prev, categories: cats }));
   }, []);
 
+  const clearFilters = useCallback(() => {
+    setFilterState((prev) => ({ ...prev, categories: [...categories] }));
+  }, [categories]);
+
   const setTimeRange = useCallback((range: TimeRange | null) => {
     setFilterState((prev) => ({ ...prev, timeRange: range }));
   }, []);
 
   const setAggregation = useCallback((period: AggregationPeriod) => {
     setFilterState((prev) => ({ ...prev, aggregation: period }));
+  }, []);
+
+  const resetView = useCallback(() => {
+    setFilterState((prev) => ({
+      ...prev,
+      timeRange: null,
+      aggregation: '1min',
+    }));
+    setResetViewVersion((v) => v + 1);
   }, []);
 
   const resetData = useCallback(() => {
@@ -110,10 +137,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       dataVersion,
       filterState,
       setSelectedCategories,
+      clearFilters,
       setTimeRange,
       setAggregation,
+      resetViewVersion,
+      resetView,
       isStreaming,
       setStreamingEnabled,
+      stressMode,
+      setStressMode,
       dataPointTarget,
       setDataPointTarget,
       resetData,
@@ -123,10 +155,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       dataVersion,
       filterState,
       setSelectedCategories,
+      clearFilters,
       setTimeRange,
       setAggregation,
+      resetViewVersion,
+      resetView,
       isStreaming,
+      stressMode,
       dataPointTarget,
+      setDataPointTarget,
       resetData,
       categories,
     ]
