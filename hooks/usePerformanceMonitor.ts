@@ -23,7 +23,7 @@ export function usePerformanceMonitor(): UsePerformanceMonitorResult {
   const [processingTime, setProcessingTime] = useState(0);
 
   const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(performance.now());
+  const lastTimeRef = useRef(typeof performance !== 'undefined' ? performance.now() : 0);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
