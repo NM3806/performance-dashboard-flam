@@ -8,6 +8,7 @@ import Heatmap from '@/components/charts/Heatmap';
 import TimeRangeSelector from '@/components/controls/TimeRangeSelector';
 import DataTable from '@/components/ui/DataTable';
 import FilterPanel from '@/components/controls/FilterPanel';
+import StressTestControls from '@/components/controls/StressTestControls';
 import PerformanceMonitor from '@/components/ui/PerformanceMonitor';
 
 export default function DashboardPage() {
@@ -55,11 +56,12 @@ export default function DashboardPage() {
       {/* Data controls */}
       <section className="dashboard-section">
         <div className="section-label">Data Controls</div>
-        <div className="controls-bar">
+        <div className="controls-bar" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
           <div className="control-group">
             <span className="control-label">Categories</span>
             <FilterPanel />
           </div>
+          <StressTestControls />
         </div>
       </section>
 
