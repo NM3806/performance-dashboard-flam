@@ -2,6 +2,8 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { DataPoint } from '@/lib/types';
 import { generateStreamPoint } from '@/lib/dataGenerator';
 
+import { globalPerfMetrics } from '@/hooks/usePerformanceMonitor';
+
 const STREAM_INTERVAL_MS = 100;
 
 interface UseDataStreamOptions {
@@ -24,6 +26,7 @@ export function useDataStream(
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tick = useCallback(() => {
+    const t0 = performance.now();
     const point = generateStreamPoint(Date.now());
     const data = dataRef.current;
 
@@ -39,6 +42,7 @@ export function useDataStream(
     if (onNewPoint) {
       onNewPoint(point);
     }
+    globalPerfMetrics.dataProcessingTime = performance.now() - t0;
   }, [dataRef, maxPoints, onNewPoint]);
 
   useEffect(() => {

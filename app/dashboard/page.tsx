@@ -8,6 +8,7 @@ import Heatmap from '@/components/charts/Heatmap';
 import TimeRangeSelector from '@/components/controls/TimeRangeSelector';
 import DataTable from '@/components/ui/DataTable';
 import FilterPanel from '@/components/controls/FilterPanel';
+import PerformanceMonitor from '@/components/ui/PerformanceMonitor';
 
 export default function DashboardPage() {
   return (
@@ -70,29 +71,7 @@ export default function DashboardPage() {
 
       <hr className="section-divider" />
 
-      {/* Performance footer placeholder */}
-      <footer className="perf-footer">
-        <div className="perf-metric">
-          <span className="perf-metric-label">FPS</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Memory</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Render</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Processing</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Points</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-      </footer>
+      <PerformanceMonitor />
     </>
   );
 }

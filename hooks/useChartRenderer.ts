@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { ChartDimensions, ViewTransform } from '@/lib/types';
 import { setupCanvas, DEFAULT_PADDING, IDENTITY_TRANSFORM } from '@/lib/canvasUtils';
+import { globalPerfMetrics } from '@/hooks/usePerformanceMonitor';
 
 interface UseChartRendererOptions {
   // Called when canvas needs redrawing
@@ -44,7 +45,9 @@ export function useChartRenderer(options: UseChartRendererOptions): UseChartRend
       const ctx = setupCanvas(canvas, dim.width, dim.height);
       if (!ctx) return;
 
+      const t0 = performance.now();
       render(ctx, dim, transform.current);
+      globalPerfMetrics.renderTime = performance.now() - t0;
     });
   }, [render]);
 
