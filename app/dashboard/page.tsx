@@ -1,19 +1,13 @@
-// Server component — static dashboard structure
-// Charts and controls are client components rendered within this shell
+'use client';
 
+import { DashboardHeader } from '@/components/ui/DashboardHeader';
+
+// Dashboard page — assembles all sections
+// Client component because it lives inside DataProvider context
 export default function DashboardPage() {
   return (
     <>
-      {/* Header */}
-      <header className="dashboard-header">
-        <h1>Performance Dashboard</h1>
-        <div className="header-meta">
-          <span className="live-indicator">
-            <span className="live-dot active" />
-            <span>LIVE</span>
-          </span>
-        </div>
-      </header>
+      <DashboardHeader />
 
       {/* Primary chart area */}
       <section className="dashboard-section">
@@ -21,7 +15,7 @@ export default function DashboardPage() {
         <div className="chart-area primary-chart">
           <div className="chart-title">Line Chart</div>
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-            Chart renders here — Phase 4
+            Chart renders here — Phase 5
           </div>
         </div>
       </section>
@@ -106,7 +100,7 @@ export default function DashboardPage() {
 
       <hr className="section-divider" />
 
-      {/* Performance footer */}
+      {/* Performance footer placeholder */}
       <footer className="perf-footer">
         <div className="perf-metric">
           <span className="perf-metric-label">FPS</span>

@@ -1,3 +1,5 @@
+import { DataProvider } from '@/components/providers/DataProvider';
+
 export default function DashboardLayout({
   children,
 }: {
@@ -5,7 +7,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="dashboard-container">
-      {children}
+      <DataProvider>
+        {children}
+      </DataProvider>
     </div>
   );
 }
