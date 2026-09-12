@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useVirtualization } from '@/hooks/useVirtualization';
 import { DataPoint } from '@/lib/types';
@@ -11,9 +11,16 @@ const TABLE_HEIGHT = 320;
 // Virtualized data table — only renders visible rows + buffer
 const DataTable = React.memo(function DataTable() {
   const { dataRef, dataVersion, filterState } = useData();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Filter data to match current filters
   const filteredData = useMemo(() => {
+    if (!mounted) return [];
+    
     const data = dataRef.current;
     const { categories, timeRange } = filterState;
     const catSet = new Set(categories);
@@ -26,7 +33,7 @@ const DataTable = React.memo(function DataTable() {
     }
     return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataVersion, filterState]);
+  }, [dataVersion, filterState, mounted]);
 
   const { visibleRange, totalHeight, offsetY, onScroll, scrollContainerRef } = useVirtualization({
     itemCount: filteredData.length,
