@@ -184,3 +184,24 @@ export const IDENTITY_TRANSFORM: ViewTransform = {
   scaleX: 1,
   scaleY: 1,
 };
+
+// Render an informative empty state directly on canvas
+export function drawEmptyState(
+  ctx: CanvasRenderingContext2D,
+  dim: ChartDimensions,
+  message: string = 'No data for selected filters'
+) {
+  clearCanvas(ctx, dim.width, dim.height);
+  const centerX = dim.width / 2;
+  const centerY = dim.height / 2;
+
+  ctx.fillStyle = '#8a8a8a';
+  ctx.font = '13px "Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(message, centerX, centerY - 8);
+
+  ctx.font = '11px "IBM Plex Mono", monospace';
+  ctx.fillStyle = '#a8a29e';
+  ctx.fillText('Adjust time range or category filters', centerX, centerY + 14);
+}

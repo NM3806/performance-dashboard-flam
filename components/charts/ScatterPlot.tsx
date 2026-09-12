@@ -12,11 +12,12 @@ import {
   drawYAxis,
   getCategoryColor,
   computeBounds,
+  drawEmptyState,
 } from '@/lib/canvasUtils';
 
 // Scatter plot with zoom/pan support
 const ScatterPlot = React.memo(function ScatterPlot() {
-  const { dataRef, dataVersion, filterState, categories } = useData();
+  const { dataRef, dataVersion, filterState, categories, resetViewVersion } = useData();
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
 
@@ -25,7 +26,10 @@ const ScatterPlot = React.memo(function ScatterPlot() {
       clearCanvas(ctx, dim.width, dim.height);
 
       const data = dataRef.current;
-      if (data.length === 0) return;
+      if (data.length === 0) {
+        drawEmptyState(ctx, dim, 'Loading data...');
+        return;
+      }
 
       const { categories: selectedCats, timeRange } = filterState;
       const catSet = new Set(selectedCats);
@@ -36,7 +40,10 @@ const ScatterPlot = React.memo(function ScatterPlot() {
         if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
         filtered.push(p);
       }
-      if (filtered.length === 0) return;
+      if (filtered.length === 0) {
+        drawEmptyState(ctx, dim, 'No data for selected filters');
+        return;
+      }
 
       const timestamps = filtered.map((p) => p.timestamp);
       const values = filtered.map((p) => p.value);
@@ -138,6 +145,14 @@ const ScatterPlot = React.memo(function ScatterPlot() {
       container.removeEventListener('pointercancel', handlePointerUp);
     };
   }, [containerRef, transform, requestRender]);
+
+  // Reset zoom/pan when global resetView fires
+  useEffect(() => {
+    if (resetViewVersion > 0) {
+      transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
+      requestRender();
+    }
+  }, [resetViewVersion, transform, requestRender]);
 
   function handleReset() {
     transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };

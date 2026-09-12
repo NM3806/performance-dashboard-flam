@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
 import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
-import { clearCanvas, DEFAULT_PADDING } from '@/lib/canvasUtils';
+import { clearCanvas, DEFAULT_PADDING, drawEmptyState } from '@/lib/canvasUtils';
 
 // Heatmap — groups data into time x value cells, colors by density
 const Heatmap = React.memo(function Heatmap() {
@@ -15,7 +15,10 @@ const Heatmap = React.memo(function Heatmap() {
       clearCanvas(ctx, dim.width, dim.height);
 
       const data = dataRef.current;
-      if (data.length === 0) return;
+      if (data.length === 0) {
+        drawEmptyState(ctx, dim, 'Loading data...');
+        return;
+      }
 
       const { categories: selectedCats, timeRange } = filterState;
       const catSet = new Set(selectedCats);
@@ -26,7 +29,10 @@ const Heatmap = React.memo(function Heatmap() {
         if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
         filtered.push(p);
       }
-      if (filtered.length === 0) return;
+      if (filtered.length === 0) {
+        drawEmptyState(ctx, dim, 'No data for selected filters');
+        return;
+      }
 
       // Find data bounds
       let tMin = filtered[0].timestamp, tMax = filtered[0].timestamp;

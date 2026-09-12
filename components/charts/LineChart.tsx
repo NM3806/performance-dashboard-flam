@@ -12,11 +12,12 @@ import {
   drawYAxis,
   getCategoryColor,
   computeBounds,
+  drawEmptyState,
 } from '@/lib/canvasUtils';
 
 // Line chart with zoom/pan support
 const LineChart = React.memo(function LineChart() {
-  const { dataRef, dataVersion, filterState, categories } = useData();
+  const { dataRef, dataVersion, filterState, categories, resetViewVersion } = useData();
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
 
@@ -25,11 +26,17 @@ const LineChart = React.memo(function LineChart() {
       clearCanvas(ctx, dim.width, dim.height);
 
       const data = dataRef.current;
-      if (data.length === 0) return;
+      if (data.length === 0) {
+        drawEmptyState(ctx, dim, 'Loading data...');
+        return;
+      }
 
       const { categories: selectedCats, timeRange } = filterState;
       const filtered = filterData(data, selectedCats, timeRange);
-      if (filtered.length === 0) return;
+      if (filtered.length === 0) {
+        drawEmptyState(ctx, dim, 'No data for selected filters');
+        return;
+      }
 
       const timestamps = filtered.map((p) => p.timestamp);
       const values = filtered.map((p) => p.value);
@@ -145,6 +152,14 @@ const LineChart = React.memo(function LineChart() {
     };
   }, [containerRef, transform, requestRender]);
 
+  // Reset zoom/pan when global resetView fires
+  useEffect(() => {
+    if (resetViewVersion > 0) {
+      transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
+      requestRender();
+    }
+  }, [resetViewVersion, transform, requestRender]);
+
   // Reset zoom/pan button
   function handleReset() {
     transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
@@ -154,7 +169,7 @@ const LineChart = React.memo(function LineChart() {
   return (
     <div className="chart-area primary-chart">
       <div className="chart-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>Line Chart</span>
+        <span>Value over time</span>
         <button className="control-button" onClick={handleReset} style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
           Reset view
         </button>

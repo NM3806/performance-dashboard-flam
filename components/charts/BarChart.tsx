@@ -9,22 +9,25 @@ import {
   clearCanvas,
   drawXAxis,
   drawYAxis,
-  getCategoryColor,
   computeBounds,
   mapX,
   mapY,
+  drawEmptyState,
 } from '@/lib/canvasUtils';
 
-// Bar chart — shows aggregated values per time bucket
+// Bar chart — shows aggregated volume/values per time bucket
 const BarChart = React.memo(function BarChart() {
-  const { dataRef, dataVersion, filterState, categories } = useData();
+  const { dataRef, dataVersion, filterState } = useData();
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, dim: ChartDimensions, transform: ViewTransform) => {
       clearCanvas(ctx, dim.width, dim.height);
 
       const data = dataRef.current;
-      if (data.length === 0) return;
+      if (data.length === 0) {
+        drawEmptyState(ctx, dim, 'Loading data...');
+        return;
+      }
 
       // Filter by categories and time range
       const { categories: selectedCats, timeRange, aggregation } = filterState;
@@ -36,16 +39,35 @@ const BarChart = React.memo(function BarChart() {
         if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
         filtered.push(p);
       }
-      if (filtered.length === 0) return;
+      if (filtered.length === 0) {
+        drawEmptyState(ctx, dim, 'No data for selected filters');
+        return;
+      }
 
       // Aggregate
       const aggregated = aggregateData(filtered, aggregation);
-      if (aggregated.length === 0) return;
+      if (aggregated.length === 0) {
+        drawEmptyState(ctx, dim, 'No data for selected filters');
+        return;
+      }
 
-      // Use only first selected category for bar chart simplicity
-      const primaryCat = selectedCats[0];
-      const catBars = aggregated.filter((a) => a.category === primaryCat);
-      if (catBars.length === 0) return;
+      // Aggregate values across all selected categories per bucket
+      const bucketMap = new Map<number, { sum: number; count: number }>();
+      for (const item of aggregated) {
+        const cur = bucketMap.get(item.timestamp) || { sum: 0, count: 0 };
+        cur.sum += item.avg * item.count;
+        cur.count += item.count;
+        bucketMap.set(item.timestamp, cur);
+      }
+
+      const catBars = Array.from(bucketMap.entries())
+        .map(([timestamp, { sum, count }]) => ({ timestamp, avg: sum / count }))
+        .sort((a, b) => a.timestamp - b.timestamp);
+
+      if (catBars.length === 0) {
+        drawEmptyState(ctx, dim, 'No data for selected filters');
+        return;
+      }
 
       const timestamps = catBars.map((a) => a.timestamp);
       const values = catBars.map((a) => a.avg);
@@ -61,9 +83,9 @@ const BarChart = React.memo(function BarChart() {
 
       // Bar width based on number of bars and available space
       const plotWidth = plotRight - plotLeft;
-      const barWidth = Math.max(2, Math.min(20, (plotWidth / catBars.length) * 0.7));
+      const barWidth = Math.max(2, Math.min(24, (plotWidth / catBars.length) * 0.75));
 
-      ctx.fillStyle = getCategoryColor(primaryCat, categories);
+      ctx.fillStyle = '#2563eb';
       ctx.globalAlpha = 0.85;
 
       for (let i = 0; i < catBars.length; i++) {
@@ -78,7 +100,7 @@ const BarChart = React.memo(function BarChart() {
 
       ctx.globalAlpha = 1;
     },
-    [dataRef, filterState, categories]
+    [dataRef, filterState]
   );
 
   const { canvasRef, containerRef } = useChartRenderer({

@@ -56,18 +56,37 @@ const DataTable = React.memo(function DataTable() {
         style={{ height: `${TABLE_HEIGHT}px` }}
         onScroll={onScroll}
       >
-        {/* Spacer to maintain scroll height */}
-        <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
-          <div style={{ position: 'absolute', top: `${offsetY}px`, left: 0, right: 0 }}>
-            {visibleRows.map((point, i) => (
-              <div key={visibleRange.start + i} className="data-table-row" style={{ height: `${ROW_HEIGHT}px` }}>
-                <span className="mono">{formatTimestamp(point.timestamp)}</span>
-                <span className="mono">{point.value.toFixed(2)}</span>
-                <span>{point.category}</span>
-              </div>
-            ))}
+        {filteredData.length === 0 ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: 'var(--text-tertiary)',
+              gap: '6px',
+            }}
+          >
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              No data for selected filters
+            </span>
+            <span style={{ fontSize: '0.78rem' }}>Adjust time range or category filters</span>
           </div>
-        </div>
+        ) : (
+          /* Spacer to maintain scroll height */
+          <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: `${offsetY}px`, left: 0, right: 0 }}>
+              {visibleRows.map((point, i) => (
+                <div key={visibleRange.start + i} className="data-table-row" style={{ height: `${ROW_HEIGHT}px` }}>
+                  <span className="mono">{formatTimestamp(point.timestamp)}</span>
+                  <span className="mono">{point.value.toFixed(2)}</span>
+                  <span>{point.category}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--text-tertiary)', borderTop: '1px solid var(--border-light)' }}>
         {filteredData.length.toLocaleString()} rows
