@@ -6,6 +6,7 @@ import BarChart from '@/components/charts/BarChart';
 import ScatterPlot from '@/components/charts/ScatterPlot';
 import Heatmap from '@/components/charts/Heatmap';
 import TimeRangeSelector from '@/components/controls/TimeRangeSelector';
+import DataTable from '@/components/ui/DataTable';
 import FilterPanel from '@/components/controls/FilterPanel';
 
 export default function DashboardPage() {
@@ -61,21 +62,10 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Data table placeholder */}
+      {/* Data table */}
       <section className="dashboard-section">
         <div className="section-label">Data Table</div>
-        <div className="data-table-container">
-          <div className="data-table-header">
-            <span>Timestamp</span>
-            <span>Value</span>
-            <span>Category</span>
-          </div>
-          <div className="data-table-viewport" style={{ height: '200px' }}>
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-              Virtual table — Phase 7
-            </div>
-          </div>
-        </div>
+        <DataTable />
       </section>
 
       <hr className="section-divider" />
