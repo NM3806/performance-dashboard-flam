@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Performance-Critical Data Visualization Dashboard
 
-## Getting Started
+A high-performance real-time data visualization dashboard built with Next.js App Router, TypeScript, and the HTML5 Canvas API.
 
-First, run the development server:
+## Design Approach
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The dashboard follows a "Swiss information design" and "engineering instrument panel" philosophy. 
+- **Colors:** Minimalist palette with high contrast, primarily using grays, blacks, and off-whites. Colors are reserved exclusively for data categories to ensure they stand out.
+- **Typography:** Uses Inter for UI elements and IBM Plex Mono for all data points and axis labels to align numbers properly and convey precision.
+- **Layout:** A grid-based, dense layout that maximizes data visibility on the screen while remaining clear and structured.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To handle 10,000+ data points at 60 frames per second without crashing or lagging, the app separates **React State** from **Mutable Data**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Mutable Refs for Data:** The actual stream of data points is stored in a `React.MutableRefObject`. When new data arrives (every 100ms), it is pushed directly into this array. This avoids triggering a React re-render for every single data point.
+- **Controlled Re-renders:** A `dataVersion` integer is kept in React state. The data stream hook increments this version only every 500ms. This tells the React component tree to update and redraw the charts, batching the visual updates.
+- **Server and Client Components:** The Next.js App Router is used effectively. The layout and API are server-side, while the charts and controls are Client Components (`'use client'`) since they require browser APIs like Canvas and real-time interaction.
 
-## Learn More
+## Performance Strategies
 
-To learn more about Next.js, take a look at the following resources:
+1. **Canvas Rendering:** Standard DOM elements (like SVG or div bars) would overwhelm the browser with 10,000 nodes. Using the Canvas API allows us to draw thousands of points on a single DOM element.
+2. **Pixel-Level Downsampling:** The line chart avoids drawing invisible detail. If 50 data points all map to the exact same X and Y pixel coordinate, the chart only draws a line to that pixel once.
+3. **Off-screen Culling:** When zooming or panning, the charts calculate if a point is outside the visible area and skip drawing it entirely.
+4. **Data Batching and Sliding Windows:** The data array removes the oldest points when it exceeds the target load (e.g., 10,000 points) to prevent memory leaks and infinite array growth over time.
+5. **Virtual Scrolling:** The data table uses virtual scrolling. Even if there are 50,000 rows in memory, it only renders the ~20 rows currently visible on the screen plus a small buffer.
+6. **Request Animation Frame (rAF):** The chart renderer uses `requestAnimationFrame` to ensure drawing only happens when the browser is ready for the next frame, preventing redundant drawing calculations.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How to Run
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+2. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **View the dashboard:**
+   Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard) in your browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Production Build:**
+   For the best performance, test the app using the production build:
+   ```bash
+   npm run build
+   npm run start
+   ```
