@@ -1,23 +1,20 @@
 'use client';
 
 import { DashboardHeader } from '@/components/ui/DashboardHeader';
+import LineChart from '@/components/charts/LineChart';
+import BarChart from '@/components/charts/BarChart';
+import ScatterPlot from '@/components/charts/ScatterPlot';
+import Heatmap from '@/components/charts/Heatmap';
 
-// Dashboard page — assembles all sections
-// Client component because it lives inside DataProvider context
 export default function DashboardPage() {
   return (
     <>
       <DashboardHeader />
 
-      {/* Primary chart area */}
+      {/* Primary chart — line */}
       <section className="dashboard-section">
         <div className="section-label">Time Series</div>
-        <div className="chart-area primary-chart">
-          <div className="chart-title">Line Chart</div>
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-            Chart renders here — Phase 5
-          </div>
-        </div>
+        <LineChart />
       </section>
 
       {/* Time controls placeholder */}
@@ -44,15 +41,11 @@ export default function DashboardPage() {
         <div className="secondary-charts">
           <div className="chart-area">
             <div className="chart-title">Scatter Plot</div>
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-              Phase 5
-            </div>
+            <ScatterPlot />
           </div>
           <div className="chart-area">
             <div className="chart-title">Bar Chart</div>
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-              Phase 5
-            </div>
+            <BarChart />
           </div>
         </div>
       </section>
@@ -62,9 +55,7 @@ export default function DashboardPage() {
         <div className="section-label">Density</div>
         <div className="chart-area full-width-chart">
           <div className="chart-title">Heatmap</div>
-          <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-            Phase 5
-          </div>
+          <Heatmap />
         </div>
       </section>
 
