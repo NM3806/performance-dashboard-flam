@@ -5,10 +5,8 @@ import LineChart from '@/components/charts/LineChart';
 import BarChart from '@/components/charts/BarChart';
 import ScatterPlot from '@/components/charts/ScatterPlot';
 import Heatmap from '@/components/charts/Heatmap';
-import TimeRangeSelector from '@/components/controls/TimeRangeSelector';
+import DashboardControls from '@/components/controls/DashboardControls';
 import DataTable from '@/components/ui/DataTable';
-import FilterPanel from '@/components/controls/FilterPanel';
-import StressTestControls from '@/components/controls/StressTestControls';
 import PerformanceMonitor from '@/components/ui/PerformanceMonitor';
 
 export default function DashboardPage() {
@@ -16,62 +14,45 @@ export default function DashboardPage() {
     <>
       <DashboardHeader />
 
-      {/* Primary chart — line */}
+      {/* Primary chart — Value over time */}
       <section className="dashboard-section">
-        <div className="section-label">Time Series</div>
         <LineChart />
       </section>
 
-      {/* Time controls */}
+      {/* View, Data, and Load controls directly underneath primary chart */}
       <section className="dashboard-section">
-        <TimeRangeSelector />
+        <DashboardControls />
       </section>
 
-      {/* Secondary charts */}
+      {/* Secondary charts — Distribution and Volume */}
       <section className="dashboard-section">
-        <div className="section-label">Analysis</div>
         <div className="secondary-charts">
           <div className="chart-area">
-            <div className="chart-title">Scatter Plot</div>
+            <div className="chart-title">Distribution</div>
             <ScatterPlot />
           </div>
           <div className="chart-area">
-            <div className="chart-title">Bar Chart</div>
+            <div className="chart-title">Volume</div>
             <BarChart />
           </div>
         </div>
       </section>
 
-      {/* Heatmap */}
+      {/* Density Heatmap */}
       <section className="dashboard-section">
-        <div className="section-label">Density</div>
         <div className="chart-area full-width-chart">
-          <div className="chart-title">Heatmap</div>
+          <div className="chart-title">Density</div>
           <Heatmap />
-        </div>
-      </section>
-
-      <hr className="section-divider" />
-
-      {/* Data controls */}
-      <section className="dashboard-section">
-        <div className="section-label">Data Controls</div>
-        <div className="controls-bar" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-          <div className="control-group">
-            <span className="control-label">Categories</span>
-            <FilterPanel />
-          </div>
-          <StressTestControls />
         </div>
       </section>
 
       {/* Data table */}
       <section className="dashboard-section">
-        <div className="section-label">Data Table</div>
-        <DataTable />
+        <div className="chart-area">
+          <div className="chart-title">Data Table</div>
+          <DataTable />
+        </div>
       </section>
-
-      <hr className="section-divider" />
 
       <PerformanceMonitor />
     </>

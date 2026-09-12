@@ -16,12 +16,12 @@ export function DashboardHeader() {
       <header className="dashboard-header">
         <h1>Performance Dashboard</h1>
         <div className="header-meta">
+          <span>Time Series Dataset</span>
+          <span>— points</span>
           <span className="live-indicator">
             <span className="live-dot" />
-            <span>LOADING</span>
+            <span>CONNECTING</span>
           </span>
-          <span>— pts</span>
-          <span>—</span>
         </div>
       </header>
     );
@@ -34,12 +34,12 @@ export function DashboardHeader() {
     <header className="dashboard-header">
       <h1>Performance Dashboard</h1>
       <div className="header-meta">
+        <span>Time Series Dataset</span>
+        <span>{pointCount.toLocaleString()} points</span>
         <span className="live-indicator">
-          <span className={`live-dot ${isStreaming ? 'active' : ''}`} />
+          <span className={`live-dot ${isStreaming ? 'live' : 'paused'}`} />
           <span>{isStreaming ? 'LIVE' : 'PAUSED'}</span>
         </span>
-        <span>{pointCount.toLocaleString()} pts</span>
-        <span>{new Date().toLocaleTimeString()}</span>
       </div>
     </header>
   );

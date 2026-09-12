@@ -134,16 +134,15 @@ h3 { font-size: 1rem; }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--text-tertiary);
 }
 
-.live-dot.active {
-  animation: pulse 2s ease-in-out infinite;
+.live-dot.live {
+  background: #16a34a;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+.live-dot.paused {
+  background: #d97706;
 }
 
 /* --- Section structure --- */
@@ -204,6 +203,61 @@ h3 { font-size: 1rem; }
 
 .full-width-chart {
   min-height: 200px;
+}
+
+/* --- Dashboard Controls (Swiss instrument layout, no cards) --- */
+.dashboard-controls {
+  padding: 4px 0 12px;
+  margin-bottom: 8px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.control-row-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.control-sublabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-right: 2px;
+}
+
+.control-hint {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  margin-left: 8px;
+}
+
+.control-count {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
 }
 
 /* --- Controls --- */
