@@ -12,12 +12,13 @@ import {
   computeBounds,
   mapX,
   mapY,
+  getCategoryColor,
   drawEmptyState,
 } from '@/lib/canvasUtils';
 
 // Bar chart — shows aggregated volume/values per time bucket
 const BarChart = React.memo(function BarChart() {
-  const { dataRef, dataVersion, filterState } = useData();
+  const { dataRef, dataVersion, filterState, categories } = useData();
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, dim: ChartDimensions, transform: ViewTransform) => {
@@ -85,7 +86,8 @@ const BarChart = React.memo(function BarChart() {
       const plotWidth = plotRight - plotLeft;
       const barWidth = Math.max(2, Math.min(24, (plotWidth / catBars.length) * 0.75));
 
-      ctx.fillStyle = '#2563eb';
+      // Use matching series color when a single series is isolated, or primary palette color
+      ctx.fillStyle = selectedCats.length === 1 ? getCategoryColor(selectedCats[0], categories) : '#1e40af';
       ctx.globalAlpha = 0.85;
 
       for (let i = 0; i < catBars.length; i++) {

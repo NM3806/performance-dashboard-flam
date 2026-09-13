@@ -16,55 +16,31 @@ const PerformanceMonitor = React.memo(function PerformanceMonitor() {
 
   if (!mounted) {
     return (
-      <footer className="perf-footer">
-        <div className="perf-metric">
-          <span className="perf-metric-label">FPS</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Memory</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Render</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Processing</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
-        <div className="perf-metric">
-          <span className="perf-metric-label">Points</span>
-          <span className="perf-metric-value mono">—</span>
-        </div>
+      <footer className="perf-status-line">
+        <span>FPS —</span>
+        <span className="status-sep">·</span>
+        <span>Memory —</span>
+        <span className="status-sep">·</span>
+        <span>Render —</span>
+        <span className="status-sep">·</span>
+        <span>Processing —</span>
       </footer>
     );
   }
 
-  const pointCount = dataRef.current ? dataRef.current.length : 0;
+  const memText = formatMemory(memoryUsage);
+  const renderText = renderTime > 0 ? `${renderTime.toFixed(1)} ms` : '—';
+  const procText = processingTime > 0 ? `${processingTime.toFixed(1)} ms` : '—';
 
   return (
-    <footer className="perf-footer">
-      <div className="perf-metric">
-        <span className="perf-metric-label">FPS</span>
-        <span className="perf-metric-value mono">{fps > 0 ? fps : '—'}</span>
-      </div>
-      <div className="perf-metric">
-        <span className="perf-metric-label">Memory</span>
-        <span className="perf-metric-value mono">{formatMemory(memoryUsage)}</span>
-      </div>
-      <div className="perf-metric">
-        <span className="perf-metric-label">Render</span>
-        <span className="perf-metric-value mono">{renderTime > 0 ? `${renderTime.toFixed(1)}ms` : '—'}</span>
-      </div>
-      <div className="perf-metric">
-        <span className="perf-metric-label">Processing</span>
-        <span className="perf-metric-value mono">{processingTime > 0 ? `${processingTime.toFixed(1)}ms` : '—'}</span>
-      </div>
-      <div className="perf-metric">
-        <span className="perf-metric-label">Points</span>
-        <span className="perf-metric-value mono">{pointCount > 0 ? pointCount.toLocaleString() : '—'}</span>
-      </div>
+    <footer className="perf-status-line">
+      <span>FPS {fps > 0 ? fps : '—'}</span>
+      <span className="status-sep">·</span>
+      <span>Memory {memText}</span>
+      <span className="status-sep">·</span>
+      <span>Render {renderText}</span>
+      <span className="status-sep">·</span>
+      <span>Processing {procText}</span>
     </footer>
   );
 });

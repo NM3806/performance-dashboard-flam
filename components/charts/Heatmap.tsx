@@ -80,9 +80,9 @@ const Heatmap = React.memo(function Heatmap() {
           if (count === 0) continue;
 
           const intensity = count / maxCount;
-          // Blue color ramp
-          const alpha = 0.1 + intensity * 0.85;
-          ctx.fillStyle = `rgba(37, 99, 235, ${alpha})`;
+          // Deliberate palette density ramp
+          const alpha = 0.12 + intensity * 0.84;
+          ctx.fillStyle = `rgba(30, 64, 175, ${alpha})`;
           ctx.fillRect(
             plotLeft + c * cellW,
             plotTop + r * cellH,

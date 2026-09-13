@@ -32,7 +32,7 @@ export default function DashboardPage() {
             <ScatterPlot />
           </div>
           <div className="chart-area">
-            <div className="chart-title">Volume</div>
+            <div className="chart-title">Values by Time</div>
             <BarChart />
           </div>
         </div>
@@ -46,10 +46,10 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Data table */}
+      {/* Raw Data table */}
       <section className="dashboard-section">
         <div className="chart-area">
-          <div className="chart-title">Data Table</div>
+          <div className="chart-title">Data</div>
           <DataTable />
         </div>
       </section>

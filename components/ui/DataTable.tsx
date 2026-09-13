@@ -4,13 +4,14 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useVirtualization } from '@/hooks/useVirtualization';
 import { DataPoint } from '@/lib/types';
+import { getCategoryColor } from '@/lib/canvasUtils';
 
 const ROW_HEIGHT = 32;
 const TABLE_HEIGHT = 320;
 
 // Virtualized data table — only renders visible rows + buffer
 const DataTable = React.memo(function DataTable() {
-  const { dataRef, dataVersion, filterState } = useData();
+  const { dataRef, dataVersion, filterState, categories } = useData();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -22,8 +23,8 @@ const DataTable = React.memo(function DataTable() {
     if (!mounted) return [];
     
     const data = dataRef.current;
-    const { categories, timeRange } = filterState;
-    const catSet = new Set(categories);
+    const { categories: activeCats, timeRange } = filterState;
+    const catSet = new Set(activeCats);
     const result: DataPoint[] = [];
     for (let i = 0; i < data.length; i++) {
       const p = data[i];
@@ -42,13 +43,14 @@ const DataTable = React.memo(function DataTable() {
   });
 
   const visibleRows = filteredData.slice(visibleRange.start, visibleRange.end);
+  const totalCount = dataRef.current ? dataRef.current.length : 0;
 
   return (
     <div className="data-table-container">
       <div className="data-table-header">
         <span>Timestamp</span>
         <span>Value</span>
-        <span>Category</span>
+        <span>Series</span>
       </div>
       <div
         ref={scrollContainerRef}
@@ -71,7 +73,7 @@ const DataTable = React.memo(function DataTable() {
             <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
               No data for selected filters
             </span>
-            <span style={{ fontSize: '0.78rem' }}>Adjust time range or category filters</span>
+            <span style={{ fontSize: '0.78rem' }}>Adjust time range or series filters</span>
           </div>
         ) : (
           /* Spacer to maintain scroll height */
@@ -81,15 +83,23 @@ const DataTable = React.memo(function DataTable() {
                 <div key={visibleRange.start + i} className="data-table-row" style={{ height: `${ROW_HEIGHT}px` }}>
                   <span className="mono">{formatTimestamp(point.timestamp)}</span>
                   <span className="mono">{point.value.toFixed(2)}</span>
-                  <span>{point.category}</span>
+                  <span className="table-series-cell">
+                    <span
+                      className="table-series-dot"
+                      style={{ backgroundColor: getCategoryColor(point.category, categories) }}
+                    />
+                    <span>{point.category}</span>
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
-      <div style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--text-tertiary)', borderTop: '1px solid var(--border-light)' }}>
-        {filteredData.length.toLocaleString()} rows
+      <div className="data-table-footer">
+        <span>Showing {filteredData.length.toLocaleString()} of {totalCount.toLocaleString()} points</span>
+        <span className="meta-sep">·</span>
+        <span>{filterState.categories.length} of {categories.length} series visible</span>
       </div>
     </div>
   );
