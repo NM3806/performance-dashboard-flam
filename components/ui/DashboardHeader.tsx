@@ -14,10 +14,10 @@ export function DashboardHeader() {
   if (!mounted) {
     return (
       <header className="dashboard-header">
-        <h1>Performance Dashboard</h1>
+        <h1 className="header-title">Time Series Dataset</h1>
         <div className="header-meta">
-          <span>Time Series Dataset</span>
           <span>— points</span>
+          <span className="meta-dot">·</span>
           <span className="live-indicator">
             <span className="live-dot" />
             <span>CONNECTING</span>
@@ -32,10 +32,10 @@ export function DashboardHeader() {
 
   return (
     <header className="dashboard-header">
-      <h1>Performance Dashboard</h1>
+      <h1 className="header-title">Time Series Dataset</h1>
       <div className="header-meta">
-        <span>Time Series Dataset</span>
-        <span>{pointCount.toLocaleString()} points</span>
+        <span className="mono">{pointCount.toLocaleString()} points</span>
+        <span className="meta-dot">·</span>
         <span className="live-indicator">
           <span className={`live-dot ${isStreaming ? 'live' : 'paused'}`} />
           <span>{isStreaming ? 'LIVE' : 'PAUSED'}</span>

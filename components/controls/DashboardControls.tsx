@@ -3,7 +3,6 @@
 import React, { useCallback } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { AggregationPeriod } from '@/lib/types';
-import { getCategoryColor } from '@/lib/canvasUtils';
 
 const TIME_RANGES = [
   { label: '1h', ms: 60 * 60 * 1000 },
@@ -26,22 +25,17 @@ const LOAD_OPTIONS = [
 
 export const DashboardControls = React.memo(function DashboardControls() {
   const {
-    categories,
     filterState,
-    setSelectedCategories,
-    clearFilters,
     setTimeRange,
     setAggregation,
-    resetView,
     isStreaming,
     setStreamingEnabled,
     stressMode,
     setStressMode,
     dataPointTarget,
     setDataPointTarget,
+    resetData,
   } = useData();
-
-  const selected = filterState.categories;
 
   const handleTimeRange = useCallback(
     (ms: number) => {
@@ -62,16 +56,6 @@ export const DashboardControls = React.memo(function DashboardControls() {
     return Math.abs(duration - ms) < 1000;
   }
 
-  function toggleCategory(cat: string) {
-    const isSelected = selected.includes(cat);
-    if (isSelected) {
-      if (selected.length <= 1) return; // keep at least 1
-      setSelectedCategories(selected.filter((c) => c !== cat));
-    } else {
-      setSelectedCategories([...selected, cat]);
-    }
-  }
-
   return (
     <div className="dashboard-controls">
       {/* VIEW CONTROLS */}
@@ -79,89 +63,60 @@ export const DashboardControls = React.memo(function DashboardControls() {
         <span className="control-row-label">View</span>
         <div className="control-group">
           <span className="control-sublabel">Range</span>
-          {TIME_RANGES.map((tr) => (
-            <button
-              key={tr.label}
-              className={`control-button ${isTimeRangeActive(tr.ms) ? 'active' : ''}`}
-              onClick={() => handleTimeRange(tr.ms)}
-            >
-              {tr.label}
-            </button>
-          ))}
+          <div className="button-group">
+            {TIME_RANGES.map((tr) => (
+              <button
+                key={tr.label}
+                type="button"
+                className={`control-button ${isTimeRangeActive(tr.ms) ? 'active' : ''}`}
+                onClick={() => handleTimeRange(tr.ms)}
+              >
+                {tr.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="control-group">
           <span className="control-sublabel">Aggregation</span>
-          {AGGREGATIONS.map((agg) => (
-            <button
-              key={agg.value}
-              className={`control-button ${filterState.aggregation === agg.value ? 'active' : ''}`}
-              onClick={() => setAggregation(agg.value)}
-            >
-              {agg.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="control-group">
-          <button className="control-button" onClick={resetView}>
-            Reset view
-          </button>
-          <span className="control-hint">Scroll to zoom · Drag to pan</span>
+          <div className="button-group">
+            {AGGREGATIONS.map((agg) => (
+              <button
+                key={agg.value}
+                type="button"
+                className={`control-button ${filterState.aggregation === agg.value ? 'active' : ''}`}
+                onClick={() => setAggregation(agg.value)}
+              >
+                {agg.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* DATA CONTROLS */}
+      {/* DATA LOAD CONTROLS */}
       <div className="control-row">
         <span className="control-row-label">Data</span>
-        <div className="control-group filter-panel">
-          {categories.map((cat) => {
-            const isSelected = selected.includes(cat);
-            const color = getCategoryColor(cat, categories);
-            return (
-              <button
-                key={cat}
-                className={`filter-chip ${isSelected ? 'selected' : ''}`}
-                onClick={() => toggleCategory(cat)}
-              >
-                <span className="chip-dot" style={{ backgroundColor: color }} />
-                <span>{cat}</span>
-              </button>
-            );
-          })}
-
-          <button
-            className={`control-button ${selected.length === categories.length ? 'active' : ''}`}
-            onClick={clearFilters}
-          >
-            All
-          </button>
-
-          <span className="control-count">
-            {selected.length} of {categories.length} selected
-          </span>
-        </div>
-      </div>
-
-      {/* LOAD CONTROLS */}
-      <div className="control-row">
-        <span className="control-row-label">Load</span>
         <div className="control-group">
           <span className="control-sublabel">Points</span>
-          {LOAD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              className={`control-button ${dataPointTarget === opt.value ? 'active' : ''}`}
-              onClick={() => setDataPointTarget(opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
+          <div className="button-group">
+            {LOAD_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`control-button ${dataPointTarget === opt.value ? 'active' : ''}`}
+                onClick={() => setDataPointTarget(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="control-group">
           <span className="control-sublabel">Stream</span>
           <button
+            type="button"
             className={`control-button ${isStreaming ? 'active' : ''}`}
             onClick={() => setStreamingEnabled(!isStreaming)}
           >
@@ -170,12 +125,24 @@ export const DashboardControls = React.memo(function DashboardControls() {
         </div>
 
         <div className="control-group">
-          <span className="control-sublabel">Stress</span>
+          <span className="control-sublabel">Stress test</span>
           <button
+            type="button"
             className={`control-button ${stressMode ? 'active' : ''}`}
             onClick={() => setStressMode(!stressMode)}
           >
-            {stressMode ? 'Stress Mode: On (60Hz)' : 'Stress Mode: Off'}
+            {stressMode ? 'On' : 'Off'}
+          </button>
+        </div>
+
+        <div className="control-group">
+          <button
+            type="button"
+            className="control-button reload-btn"
+            onClick={resetData}
+            title="Generate fresh sample data"
+          >
+            Regenerate
           </button>
         </div>
       </div>
