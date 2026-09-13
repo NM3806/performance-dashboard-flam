@@ -37,17 +37,21 @@ const DataContext = createContext<DataContextValue | null>(null);
 
 const DEFAULT_POINT_COUNT = 10000;
 
-function createInitialBatch(count: number, catCount: number): DataPoint[] {
-  const now = 1700000000000;
-  const intervalMs = 1000;
-  const totalDuration = (count / catCount) * intervalMs;
-  return generateDataBatch(count, now - totalDuration, intervalMs);
+let initialBatchCache: DataPoint[] | null = null;
+function getInitialBatch(count: number, catCount: number): DataPoint[] {
+  if (!initialBatchCache) {
+    const now = Date.now();
+    const intervalMs = 1000;
+    const totalDuration = (count / catCount) * intervalMs;
+    initialBatchCache = generateDataBatch(count, now - totalDuration, intervalMs);
+  }
+  return initialBatchCache;
 }
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const categories = useMemo(() => getCategories(), []);
 
-  const dataRef = useRef<DataPoint[]>(createInitialBatch(DEFAULT_POINT_COUNT, categories.length));
+  const dataRef = useRef<DataPoint[]>(getInitialBatch(DEFAULT_POINT_COUNT, categories.length));
 
   const [dataVersion, setDataVersion] = useState(1);
   const [totalPoints, setTotalPoints] = useState(DEFAULT_POINT_COUNT);
