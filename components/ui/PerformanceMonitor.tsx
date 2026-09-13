@@ -1,18 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
-import { useData } from '@/components/providers/DataProvider';
 import { formatMemory } from '@/lib/performanceUtils';
+import { useMounted } from '@/hooks/useMounted';
 
 const PerformanceMonitor = React.memo(function PerformanceMonitor() {
   const { fps, memoryUsage, renderTime, processingTime } = usePerformanceMonitor();
-  const { dataRef } = useData();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   if (!mounted) {
     return (

@@ -3,8 +3,8 @@
 import React, { useCallback } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
-import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
-import { aggregateData } from '@/lib/dataGenerator';
+import { ChartDimensions, ViewTransform } from '@/lib/types';
+import { aggregateData, filterData } from '@/lib/dataGenerator';
 import {
   clearCanvas,
   drawXAxis,
@@ -16,7 +16,6 @@ import {
   drawEmptyState,
 } from '@/lib/canvasUtils';
 
-// Bar chart — shows aggregated volume/values per time bucket
 const BarChart = React.memo(function BarChart() {
   const { dataRef, dataVersion, filterState, categories } = useData();
 
@@ -30,29 +29,19 @@ const BarChart = React.memo(function BarChart() {
         return;
       }
 
-      // Filter by categories and time range
       const { categories: selectedCats, timeRange, aggregation } = filterState;
-      const catSet = new Set(selectedCats);
-      const filtered: DataPoint[] = [];
-      for (let i = 0; i < data.length; i++) {
-        const p = data[i];
-        if (!catSet.has(p.category)) continue;
-        if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
-        filtered.push(p);
-      }
+      const filtered = filterData(data, selectedCats, timeRange);
       if (filtered.length === 0) {
         drawEmptyState(ctx, dim, 'No data for selected filters');
         return;
       }
 
-      // Aggregate
       const aggregated = aggregateData(filtered, aggregation);
       if (aggregated.length === 0) {
         drawEmptyState(ctx, dim, 'No data for selected filters');
         return;
       }
 
-      // Aggregate values across all selected categories per bucket
       const bucketMap = new Map<number, { sum: number; count: number }>();
       for (const item of aggregated) {
         const cur = bucketMap.get(item.timestamp) || { sum: 0, count: 0 };
@@ -82,11 +71,9 @@ const BarChart = React.memo(function BarChart() {
       const plotRight = dim.width - dim.padding.right;
       const plotBottom = dim.height - dim.padding.bottom;
 
-      // Bar width based on number of bars and available space
       const plotWidth = plotRight - plotLeft;
       const barWidth = Math.max(2, Math.min(24, (plotWidth / catBars.length) * 0.75));
 
-      // Use matching series color when a single series is isolated, or primary palette color
       ctx.fillStyle = selectedCats.length === 1 ? getCategoryColor(selectedCats[0], categories) : '#1e40af';
       ctx.globalAlpha = 0.85;
 
@@ -102,7 +89,7 @@ const BarChart = React.memo(function BarChart() {
 
       ctx.globalAlpha = 1;
     },
-    [dataRef, filterState]
+    [dataRef, filterState, categories]
   );
 
   const { canvasRef, containerRef } = useChartRenderer({

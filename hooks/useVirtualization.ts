@@ -1,10 +1,10 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 
 interface UseVirtualizationOptions {
   itemCount: number;
   itemHeight: number;
   containerHeight: number;
-  overscan?: number; // extra rows above/below visible area
+  overscan?: number;
 }
 
 interface UseVirtualizationResult {
@@ -15,7 +15,6 @@ interface UseVirtualizationResult {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
 }
 
-// Simple virtual scrolling hook
 export function useVirtualization(options: UseVirtualizationOptions): UseVirtualizationResult {
   const { itemCount, itemHeight, containerHeight, overscan = 5 } = options;
   const [scrollTop, setScrollTop] = useState(0);

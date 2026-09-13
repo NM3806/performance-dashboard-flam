@@ -1,21 +1,17 @@
-import { DataPoint, AggregatedDataPoint, AggregationPeriod } from './types';
+import { DataPoint, AggregatedDataPoint, AggregationPeriod, TimeRange } from './types';
 
 const CATEGORIES = ['Series A', 'Series B', 'Series C', 'Series D', 'Series E'];
 
-// Generate a single data point with realistic noise
 function generatePoint(timestamp: number, category: string, baseValue: number): DataPoint {
-  // Sine wave for daily pattern + random noise
   const hourOfDay = (timestamp % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000);
   const dailyPattern = Math.sin((hourOfDay / 24) * Math.PI * 2) * 20;
   const noise = (Math.random() - 0.5) * 30;
   const categoryOffset = CATEGORIES.indexOf(category) * 15;
-
   const value = Math.max(0, Math.min(100, baseValue + dailyPattern + noise + categoryOffset));
 
   return { timestamp, value, category };
 }
 
-// Generate a batch of data points across all categories
 export function generateDataBatch(
   count: number,
   startTime: number,
@@ -35,18 +31,31 @@ export function generateDataBatch(
   return points;
 }
 
-// Generate a single new point for real-time streaming
 export function generateStreamPoint(timestamp: number): DataPoint {
   const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
   return generatePoint(timestamp, category, 50);
 }
 
-// Get all available categories
 export function getCategories(): string[] {
   return [...CATEGORIES];
 }
 
-// Aggregation period to milliseconds
+export function filterData(
+  data: DataPoint[],
+  categories: string[],
+  timeRange: TimeRange | null
+): DataPoint[] {
+  const catSet = new Set(categories);
+  const result: DataPoint[] = [];
+  for (let i = 0; i < data.length; i++) {
+    const p = data[i];
+    if (!catSet.has(p.category)) continue;
+    if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
+    result.push(p);
+  }
+  return result;
+}
+
 function periodToMs(period: AggregationPeriod): number {
   switch (period) {
     case '1min': return 60 * 1000;
@@ -55,7 +64,6 @@ function periodToMs(period: AggregationPeriod): number {
   }
 }
 
-// Aggregate data points into buckets
 export function aggregateData(
   data: DataPoint[],
   period: AggregationPeriod
@@ -101,7 +109,6 @@ export function aggregateData(
     };
   }
 
-  // Sort by timestamp
   result.sort((a, b) => a.timestamp - b.timestamp);
   return result;
 }

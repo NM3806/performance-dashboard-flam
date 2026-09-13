@@ -559,17 +559,6 @@ h3 { font-size: 1rem; }
     gap: 4px;
   }
 
-  .controls-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .perf-footer {
-    flex-wrap: wrap;
-    gap: 12px 20px;
-  }
-
   .primary-chart {
     min-height: 240px;
   }
@@ -593,12 +582,6 @@ h3 { font-size: 1rem; }
   .header-meta {
     flex-wrap: wrap;
     gap: 8px;
-  }
-
-  .perf-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
   }
 
   .data-table-header,

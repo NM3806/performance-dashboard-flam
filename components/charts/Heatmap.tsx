@@ -3,15 +3,15 @@
 import React, { useCallback } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
-import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
-import { clearCanvas, DEFAULT_PADDING, drawEmptyState } from '@/lib/canvasUtils';
+import { ChartDimensions } from '@/lib/types';
+import { filterData } from '@/lib/dataGenerator';
+import { clearCanvas, drawEmptyState } from '@/lib/canvasUtils';
 
-// Heatmap — groups data into time x value cells, colors by density
 const Heatmap = React.memo(function Heatmap() {
   const { dataRef, dataVersion, filterState } = useData();
 
   const render = useCallback(
-    (ctx: CanvasRenderingContext2D, dim: ChartDimensions, _transform: ViewTransform) => {
+    (ctx: CanvasRenderingContext2D, dim: ChartDimensions) => {
       clearCanvas(ctx, dim.width, dim.height);
 
       const data = dataRef.current;
@@ -21,20 +21,12 @@ const Heatmap = React.memo(function Heatmap() {
       }
 
       const { categories: selectedCats, timeRange } = filterState;
-      const catSet = new Set(selectedCats);
-      const filtered: DataPoint[] = [];
-      for (let i = 0; i < data.length; i++) {
-        const p = data[i];
-        if (!catSet.has(p.category)) continue;
-        if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
-        filtered.push(p);
-      }
+      const filtered = filterData(data, selectedCats, timeRange);
       if (filtered.length === 0) {
         drawEmptyState(ctx, dim, 'No data for selected filters');
         return;
       }
 
-      // Find data bounds
       let tMin = filtered[0].timestamp, tMax = filtered[0].timestamp;
       let vMin = filtered[0].value, vMax = filtered[0].value;
       for (let i = 1; i < filtered.length; i++) {
@@ -51,13 +43,11 @@ const Heatmap = React.memo(function Heatmap() {
       const plotWidth = plotRight - plotLeft;
       const plotHeight = plotBottom - plotTop;
 
-      // Grid cells
       const cols = Math.min(60, Math.max(10, Math.floor(plotWidth / 12)));
       const rows = Math.min(20, Math.max(5, Math.floor(plotHeight / 12)));
       const cellW = plotWidth / cols;
       const cellH = plotHeight / rows;
 
-      // Count points per cell
       const tRange = tMax - tMin || 1;
       const vRange = vMax - vMin || 1;
       const grid = new Uint32Array(cols * rows);
@@ -73,14 +63,12 @@ const Heatmap = React.memo(function Heatmap() {
 
       if (maxCount === 0) return;
 
-      // Draw cells
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const count = grid[r * cols + c];
           if (count === 0) continue;
 
           const intensity = count / maxCount;
-          // Deliberate palette density ramp
           const alpha = 0.12 + intensity * 0.84;
           ctx.fillStyle = `rgba(30, 64, 175, ${alpha})`;
           ctx.fillRect(
@@ -92,11 +80,9 @@ const Heatmap = React.memo(function Heatmap() {
         }
       }
 
-      // Draw axis labels
       ctx.fillStyle = '#8a8a8a';
       ctx.font = '11px "IBM Plex Mono", monospace';
 
-      // X axis — time labels
       ctx.textAlign = 'center';
       const xTicks = Math.min(6, cols);
       for (let i = 0; i <= xTicks; i++) {
@@ -111,7 +97,6 @@ const Heatmap = React.memo(function Heatmap() {
         );
       }
 
-      // Y axis — value labels
       ctx.textAlign = 'right';
       const yTicks = Math.min(5, rows);
       for (let i = 0; i <= yTicks; i++) {
@@ -121,7 +106,6 @@ const Heatmap = React.memo(function Heatmap() {
         ctx.fillText(val.toFixed(0), plotLeft - 8, y + 4);
       }
 
-      // Borders
       ctx.strokeStyle = '#d4d0cb';
       ctx.lineWidth = 1;
       ctx.strokeRect(plotLeft, plotTop, plotWidth, plotHeight);

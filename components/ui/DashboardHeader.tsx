@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useData } from '@/components/providers/DataProvider';
+import { useMounted } from '@/hooks/useMounted';
 
 export function DashboardHeader() {
-  const { isStreaming, dataRef, dataVersion } = useData();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { isStreaming, totalPoints } = useData();
+  const mounted = useMounted();
 
   if (!mounted) {
     return (
@@ -27,14 +23,11 @@ export function DashboardHeader() {
     );
   }
 
-  // Read point count from ref (only when dataVersion changes)
-  const pointCount = dataRef.current.length;
-
   return (
     <header className="dashboard-header">
       <h1 className="header-title">Time Series Dataset</h1>
       <div className="header-meta">
-        <span className="mono" suppressHydrationWarning>{pointCount.toLocaleString()} points</span>
+        <span className="mono" suppressHydrationWarning>{totalPoints.toLocaleString()} points</span>
         <span className="meta-dot">·</span>
         <span className="live-indicator">
           <span className={`live-dot ${isStreaming ? 'live' : 'paused'}`} />

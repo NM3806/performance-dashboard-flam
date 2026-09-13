@@ -14,17 +14,14 @@ export default function DashboardPage() {
     <>
       <DashboardHeader />
 
-      {/* Primary chart — Value over time */}
       <section className="dashboard-section">
         <LineChart />
       </section>
 
-      {/* View, Data, and Load controls directly underneath primary chart */}
       <section className="dashboard-section">
         <DashboardControls />
       </section>
 
-      {/* Secondary charts — Distribution and Volume */}
       <section className="dashboard-section">
         <div className="secondary-charts">
           <div className="chart-area">
@@ -38,7 +35,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Density Heatmap */}
       <section className="dashboard-section">
         <div className="chart-area full-width-chart">
           <div className="chart-title">Density</div>
@@ -46,7 +42,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Raw Data table */}
       <section className="dashboard-section">
         <div className="chart-area">
           <div className="chart-title">Data</div>

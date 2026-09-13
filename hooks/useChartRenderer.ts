@@ -4,9 +4,7 @@ import { setupCanvas, DEFAULT_PADDING, IDENTITY_TRANSFORM } from '@/lib/canvasUt
 import { globalPerfMetrics } from '@/hooks/usePerformanceMonitor';
 
 interface UseChartRendererOptions {
-  // Called when canvas needs redrawing
   render: (ctx: CanvasRenderingContext2D, dim: ChartDimensions, transform: ViewTransform) => void;
-  // External signal to trigger re-render (e.g. dataVersion)
   deps: unknown[];
 }
 
@@ -17,7 +15,6 @@ interface UseChartRendererResult {
   requestRender: () => void;
 }
 
-// Hook that manages canvas sizing, DPR, and render scheduling
 export function useChartRenderer(options: UseChartRendererOptions): UseChartRendererResult {
   const { render, deps } = options;
 
@@ -31,9 +28,8 @@ export function useChartRenderer(options: UseChartRendererOptions): UseChartRend
     padding: { ...DEFAULT_PADDING },
   });
 
-  // Render function that uses rAF to avoid redundant draws
   const requestRender = useCallback(() => {
-    if (rafRef.current !== null) return; // already scheduled
+    if (rafRef.current !== null) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       const canvas = canvasRef.current;
@@ -51,7 +47,6 @@ export function useChartRenderer(options: UseChartRendererOptions): UseChartRend
     });
   }, [render]);
 
-  // Observe container resize
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -69,12 +64,10 @@ export function useChartRenderer(options: UseChartRendererOptions): UseChartRend
     return () => observer.disconnect();
   }, [requestRender]);
 
-  // Re-render when deps change
   useEffect(() => {
     requestRender();
   }, [requestRender, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cleanup rAF on unmount
   useEffect(() => {
     return () => {
       if (rafRef.current !== null) {

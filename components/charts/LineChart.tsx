@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useCallback, useRef, useEffect, useState } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
-import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
+import { ChartDimensions, ViewTransform } from '@/lib/types';
 import {
   clearCanvas,
   mapX,
@@ -14,22 +14,20 @@ import {
   computeBounds,
   drawEmptyState,
 } from '@/lib/canvasUtils';
+import { filterData } from '@/lib/dataGenerator';
+import { useMounted } from '@/hooks/useMounted';
 
 const LineChart = React.memo(function LineChart() {
-  const { dataRef, dataVersion, filterState, categories, setSelectedCategories, resetViewVersion } = useData();
-  const [mounted, setMounted] = useState(false);
+  const { dataRef, dataVersion, totalPoints, filterState, categories, setSelectedCategories, resetViewVersion } = useData();
+  const mounted = useMounted();
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   function toggleCategory(cat: string) {
     const selected = filterState.categories;
     const isSelected = selected.includes(cat);
     if (isSelected) {
-      if (selected.length <= 1) return; // Keep at least 1 visible
+      if (selected.length <= 1) return;
       setSelectedCategories(selected.filter((c) => c !== cat));
     } else {
       setSelectedCategories([...selected, cat]);
@@ -109,7 +107,6 @@ const LineChart = React.memo(function LineChart() {
     deps: [dataVersion, filterState],
   });
 
-  // Zoom via wheel
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -127,7 +124,6 @@ const LineChart = React.memo(function LineChart() {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [containerRef, transform, requestRender]);
 
-  // Pan via pointer drag
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -167,7 +163,6 @@ const LineChart = React.memo(function LineChart() {
     };
   }, [containerRef, transform, requestRender]);
 
-  // Reset zoom/pan when global resetView fires
   useEffect(() => {
     if (resetViewVersion > 0) {
       transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
@@ -175,14 +170,12 @@ const LineChart = React.memo(function LineChart() {
     }
   }, [resetViewVersion, transform, requestRender]);
 
-  // Reset zoom/pan button
   function handleReset() {
     transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
     requestRender();
   }
 
   const visibleSeriesCount = filterState.categories.length;
-  const totalPoints = dataRef.current.length;
 
   return (
     <div className="chart-area primary-chart">
@@ -244,21 +237,5 @@ const LineChart = React.memo(function LineChart() {
     </div>
   );
 });
-
-function filterData(
-  data: DataPoint[],
-  categories: string[],
-  timeRange: { start: number; end: number } | null
-): DataPoint[] {
-  const catSet = new Set(categories);
-  const result: DataPoint[] = [];
-  for (let i = 0; i < data.length; i++) {
-    const p = data[i];
-    if (!catSet.has(p.category)) continue;
-    if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
-    result.push(p);
-  }
-  return result;
-}
 
 export default LineChart;

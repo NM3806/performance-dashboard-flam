@@ -1,10 +1,7 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { DataPoint } from '@/lib/types';
 import { generateStreamPoint } from '@/lib/dataGenerator';
-
 import { globalPerfMetrics } from '@/hooks/usePerformanceMonitor';
-
-const STREAM_INTERVAL_MS = 100;
 
 interface UseDataStreamOptions {
   enabled: boolean;
@@ -18,13 +15,11 @@ interface UseDataStreamResult {
   isStreaming: boolean;
 }
 
-// Hook that generates new data points and appends to data ref
 export function useDataStream(
   dataRef: React.MutableRefObject<DataPoint[]>,
   options: UseDataStreamOptions
 ): UseDataStreamResult {
   const { enabled, maxPoints, intervalMs = 100, batchSize = 1, onNewPoint } = options;
-  const [isStreaming, setIsStreaming] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tick = useCallback(() => {
@@ -39,10 +34,8 @@ export function useDataStream(
       }
     }
 
-    // Trim from front if over limit (sliding window)
     if (data.length > maxPoints) {
-      const excess = data.length - maxPoints;
-      data.splice(0, excess);
+      data.splice(0, data.length - maxPoints);
     }
 
     globalPerfMetrics.dataProcessingTime = performance.now() - t0;
@@ -51,13 +44,9 @@ export function useDataStream(
   useEffect(() => {
     if (enabled) {
       intervalRef.current = setInterval(tick, intervalMs);
-      setIsStreaming(true);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      setIsStreaming(false);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
 
     return () => {
@@ -68,5 +57,5 @@ export function useDataStream(
     };
   }, [enabled, intervalMs, tick]);
 
-  return { isStreaming };
+  return { isStreaming: enabled };
 }

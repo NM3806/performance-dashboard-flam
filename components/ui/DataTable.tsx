@@ -1,38 +1,22 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useVirtualization } from '@/hooks/useVirtualization';
-import { DataPoint } from '@/lib/types';
+import { filterData } from '@/lib/dataGenerator';
 import { getCategoryColor } from '@/lib/canvasUtils';
+import { useMounted } from '@/hooks/useMounted';
 
 const ROW_HEIGHT = 32;
 const TABLE_HEIGHT = 320;
 
-// Virtualized data table — only renders visible rows + buffer
 const DataTable = React.memo(function DataTable() {
-  const { dataRef, dataVersion, filterState, categories } = useData();
-  const [mounted, setMounted] = useState(false);
+  const { dataRef, dataVersion, filterState, categories, totalPoints } = useData();
+  const mounted = useMounted();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Filter data to match current filters
   const filteredData = useMemo(() => {
     if (!mounted) return [];
-    
-    const data = dataRef.current;
-    const { categories: activeCats, timeRange } = filterState;
-    const catSet = new Set(activeCats);
-    const result: DataPoint[] = [];
-    for (let i = 0; i < data.length; i++) {
-      const p = data[i];
-      if (!catSet.has(p.category)) continue;
-      if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
-      result.push(p);
-    }
-    return result;
+    return filterData(dataRef.current, filterState.categories, filterState.timeRange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataVersion, filterState, mounted]);
 
@@ -43,7 +27,6 @@ const DataTable = React.memo(function DataTable() {
   });
 
   const visibleRows = filteredData.slice(visibleRange.start, visibleRange.end);
-  const totalCount = dataRef.current ? dataRef.current.length : 0;
 
   return (
     <div className="data-table-container">
@@ -76,7 +59,6 @@ const DataTable = React.memo(function DataTable() {
             <span style={{ fontSize: '0.78rem' }}>Adjust time range or series filters</span>
           </div>
         ) : (
-          /* Spacer to maintain scroll height */
           <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
             <div style={{ position: 'absolute', top: `${offsetY}px`, left: 0, right: 0 }}>
               {visibleRows.map((point, i) => (
@@ -99,7 +81,7 @@ const DataTable = React.memo(function DataTable() {
       <div className="data-table-footer">
         <span suppressHydrationWarning>
           {mounted
-            ? `Showing ${filteredData.length.toLocaleString()} of ${totalCount.toLocaleString()} points`
+            ? `Showing ${filteredData.length.toLocaleString()} of ${totalPoints.toLocaleString()} points`
             : '—'}
         </span>
         <span className="meta-sep">·</span>

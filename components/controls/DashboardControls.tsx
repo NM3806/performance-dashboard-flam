@@ -58,7 +58,6 @@ export const DashboardControls = React.memo(function DashboardControls() {
 
   return (
     <div className="dashboard-controls">
-      {/* VIEW CONTROLS */}
       <div className="control-row">
         <span className="control-row-label">View</span>
         <div className="control-group">
@@ -94,7 +93,6 @@ export const DashboardControls = React.memo(function DashboardControls() {
         </div>
       </div>
 
-      {/* DATA LOAD CONTROLS */}
       <div className="control-row">
         <span className="control-row-label">Data</span>
         <div className="control-group">

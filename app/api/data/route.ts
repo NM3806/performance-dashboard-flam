@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateDataBatch } from '@/lib/dataGenerator';
+import { generateDataBatch, getCategories } from '@/lib/dataGenerator';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,10 +10,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid count parameter' }, { status: 400 });
   }
 
-  // Generate data ending at current time
+  const categories = getCategories();
   const now = Date.now();
-  const intervalMs = 1000; // 1 second between points
-  const totalDuration = (count / 5) * intervalMs; // 5 categories
+  const intervalMs = 1000;
+  const totalDuration = (count / categories.length) * intervalMs;
   const startTime = now - totalDuration;
 
   const data = generateDataBatch(count, startTime, intervalMs);
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       count: data.length,
       startTime,
       endTime: now,
-      categories: ['cpu', 'memory', 'network', 'disk', 'latency'],
+      categories,
     },
   });
 }

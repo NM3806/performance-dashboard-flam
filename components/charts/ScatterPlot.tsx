@@ -3,7 +3,8 @@
 import React, { useCallback, useRef, useEffect } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
-import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
+import { ChartDimensions, ViewTransform } from '@/lib/types';
+import { filterData } from '@/lib/dataGenerator';
 import {
   clearCanvas,
   mapX,
@@ -15,7 +16,6 @@ import {
   drawEmptyState,
 } from '@/lib/canvasUtils';
 
-// Scatter plot with zoom/pan support
 const ScatterPlot = React.memo(function ScatterPlot() {
   const { dataRef, dataVersion, filterState, categories, resetViewVersion } = useData();
   const isDragging = useRef(false);
@@ -32,14 +32,7 @@ const ScatterPlot = React.memo(function ScatterPlot() {
       }
 
       const { categories: selectedCats, timeRange } = filterState;
-      const catSet = new Set(selectedCats);
-      const filtered: DataPoint[] = [];
-      for (let i = 0; i < data.length; i++) {
-        const p = data[i];
-        if (!catSet.has(p.category)) continue;
-        if (timeRange && (p.timestamp < timeRange.start || p.timestamp > timeRange.end)) continue;
-        filtered.push(p);
-      }
+      const filtered = filterData(data, selectedCats, timeRange);
       if (filtered.length === 0) {
         drawEmptyState(ctx, dim, 'No data for selected filters');
         return;
@@ -88,7 +81,6 @@ const ScatterPlot = React.memo(function ScatterPlot() {
     deps: [dataVersion, filterState],
   });
 
-  // Zoom via wheel
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -106,7 +98,6 @@ const ScatterPlot = React.memo(function ScatterPlot() {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [containerRef, transform, requestRender]);
 
-  // Pan via pointer drag
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -146,7 +137,6 @@ const ScatterPlot = React.memo(function ScatterPlot() {
     };
   }, [containerRef, transform, requestRender]);
 
-  // Reset zoom/pan when global resetView fires
   useEffect(() => {
     if (resetViewVersion > 0) {
       transform.current = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1 };
