@@ -97,7 +97,11 @@ const DataTable = React.memo(function DataTable() {
         )}
       </div>
       <div className="data-table-footer">
-        <span>Showing {filteredData.length.toLocaleString()} of {mounted ? totalCount.toLocaleString() : '—'} points</span>
+        <span suppressHydrationWarning>
+          {mounted
+            ? `Showing ${filteredData.length.toLocaleString()} of ${totalCount.toLocaleString()} points`
+            : '—'}
+        </span>
         <span className="meta-sep">·</span>
         <span>{filterState.categories.length} of {categories.length} series visible</span>
       </div>

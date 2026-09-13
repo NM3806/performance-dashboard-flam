@@ -16,7 +16,7 @@ const PerformanceMonitor = React.memo(function PerformanceMonitor() {
 
   if (!mounted) {
     return (
-      <footer className="perf-status-line">
+      <footer className="perf-status-line" suppressHydrationWarning>
         <span>FPS —</span>
         <span className="status-sep">·</span>
         <span>Memory —</span>
@@ -33,7 +33,7 @@ const PerformanceMonitor = React.memo(function PerformanceMonitor() {
   const procText = processingTime > 0 ? `${processingTime.toFixed(1)} ms` : '—';
 
   return (
-    <footer className="perf-status-line">
+    <footer className="perf-status-line" suppressHydrationWarning>
       <span>FPS {fps > 0 ? fps : '—'}</span>
       <span className="status-sep">·</span>
       <span>Memory {memText}</span>

@@ -16,7 +16,7 @@ export function DashboardHeader() {
       <header className="dashboard-header">
         <h1 className="header-title">Time Series Dataset</h1>
         <div className="header-meta">
-          <span>— points</span>
+          <span suppressHydrationWarning>— points</span>
           <span className="meta-dot">·</span>
           <span className="live-indicator">
             <span className="live-dot" />
@@ -34,7 +34,7 @@ export function DashboardHeader() {
     <header className="dashboard-header">
       <h1 className="header-title">Time Series Dataset</h1>
       <div className="header-meta">
-        <span className="mono">{pointCount.toLocaleString()} points</span>
+        <span className="mono" suppressHydrationWarning>{pointCount.toLocaleString()} points</span>
         <span className="meta-dot">·</span>
         <span className="live-indicator">
           <span className={`live-dot ${isStreaming ? 'live' : 'paused'}`} />
