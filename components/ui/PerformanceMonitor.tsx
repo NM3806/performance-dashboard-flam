@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { useData } from '@/components/providers/DataProvider';
 import { formatMemory } from '@/lib/performanceUtils';
@@ -8,6 +8,38 @@ import { formatMemory } from '@/lib/performanceUtils';
 const PerformanceMonitor = React.memo(function PerformanceMonitor() {
   const { fps, memoryUsage, renderTime, processingTime } = usePerformanceMonitor();
   const { dataRef } = useData();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <footer className="perf-footer">
+        <div className="perf-metric">
+          <span className="perf-metric-label">FPS</span>
+          <span className="perf-metric-value mono">—</span>
+        </div>
+        <div className="perf-metric">
+          <span className="perf-metric-label">Memory</span>
+          <span className="perf-metric-value mono">—</span>
+        </div>
+        <div className="perf-metric">
+          <span className="perf-metric-label">Render</span>
+          <span className="perf-metric-value mono">—</span>
+        </div>
+        <div className="perf-metric">
+          <span className="perf-metric-label">Processing</span>
+          <span className="perf-metric-value mono">—</span>
+        </div>
+        <div className="perf-metric">
+          <span className="perf-metric-label">Points</span>
+          <span className="perf-metric-value mono">—</span>
+        </div>
+      </footer>
+    );
+  }
 
   const pointCount = dataRef.current ? dataRef.current.length : 0;
 
