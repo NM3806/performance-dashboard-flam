@@ -54,7 +54,7 @@ npm run start
 - **Controls**:
   - **View**: Time range (`1h`, `6h`, `24h`, `All`) and aggregation bucket (`1min`, `5min`, `1hour`).
   - **Data**: Target point load (`10K`, `25K`, `50K`), stream toggle (`Pause`/`Resume`), stress test mode (`On`/`Off`), and fresh data regeneration.
-- **Status Readout**: Unobtrusive footer displaying live FPS, render time (ms), data processing time (ms), and JS heap memory.
+- **Header Metrics**: Real-time header readout displaying dataset point count, live FPS counter, and streaming status.
 
 ---
 

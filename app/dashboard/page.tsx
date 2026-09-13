@@ -7,7 +7,6 @@ import ScatterPlot from '@/components/charts/ScatterPlot';
 import Heatmap from '@/components/charts/Heatmap';
 import DashboardControls from '@/components/controls/DashboardControls';
 import DataTable from '@/components/ui/DataTable';
-import PerformanceMonitor from '@/components/ui/PerformanceMonitor';
 
 export default function DashboardPage() {
   return (
@@ -48,8 +47,6 @@ export default function DashboardPage() {
           <DataTable />
         </div>
       </section>
-
-      <PerformanceMonitor />
     </>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { DataPoint } from '@/lib/types';
 import { generateStreamPoint } from '@/lib/dataGenerator';
-import { globalPerfMetrics } from '@/hooks/usePerformanceMonitor';
 
 interface UseDataStreamOptions {
   enabled: boolean;
@@ -23,7 +22,6 @@ export function useDataStream(
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tick = useCallback(() => {
-    const t0 = performance.now();
     const data = dataRef.current;
 
     for (let i = 0; i < batchSize; i++) {
@@ -37,8 +35,6 @@ export function useDataStream(
     if (data.length > maxPoints) {
       data.splice(0, data.length - maxPoints);
     }
-
-    globalPerfMetrics.dataProcessingTime = performance.now() - t0;
   }, [dataRef, maxPoints, batchSize, onNewPoint]);
 
   useEffect(() => {
