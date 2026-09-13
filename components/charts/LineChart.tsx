@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { useData } from '@/components/providers/DataProvider';
 import { useChartRenderer } from '@/hooks/useChartRenderer';
 import { ChartDimensions, ViewTransform, DataPoint } from '@/lib/types';
@@ -17,8 +17,13 @@ import {
 
 const LineChart = React.memo(function LineChart() {
   const { dataRef, dataVersion, filterState, categories, setSelectedCategories, resetViewVersion } = useData();
+  const [mounted, setMounted] = useState(false);
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   function toggleCategory(cat: string) {
     const selected = filterState.categories;
@@ -185,7 +190,7 @@ const LineChart = React.memo(function LineChart() {
         <div className="primary-chart-meta">
           <div className="primary-chart-title">Value over time</div>
           <div className="primary-chart-sub">
-            <span>{visibleSeriesCount} series · {totalPoints.toLocaleString()} points</span>
+            <span>{visibleSeriesCount} series · {mounted ? totalPoints.toLocaleString() : '—'} points</span>
             <span className="meta-sep">/</span>
             <span className="interaction-hint">Scroll to zoom · Drag to pan</span>
           </div>
