@@ -15,11 +15,21 @@ import {
   drawEmptyState,
 } from '@/lib/canvasUtils';
 
-// Line chart with zoom/pan support
 const LineChart = React.memo(function LineChart() {
-  const { dataRef, dataVersion, filterState, categories, resetViewVersion } = useData();
+  const { dataRef, dataVersion, filterState, categories, setSelectedCategories, resetViewVersion } = useData();
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
+
+  function toggleCategory(cat: string) {
+    const selected = filterState.categories;
+    const isSelected = selected.includes(cat);
+    if (isSelected) {
+      if (selected.length <= 1) return; // Keep at least 1 visible
+      setSelectedCategories(selected.filter((c) => c !== cat));
+    } else {
+      setSelectedCategories([...selected, cat]);
+    }
+  }
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, dim: ChartDimensions, transform: ViewTransform) => {
@@ -166,17 +176,61 @@ const LineChart = React.memo(function LineChart() {
     requestRender();
   }
 
+  const visibleSeriesCount = filterState.categories.length;
+  const totalPoints = dataRef.current.length;
+
   return (
     <div className="chart-area primary-chart">
-      <div className="chart-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>Value over time</span>
-        <button className="control-button" onClick={handleReset} style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
-          Reset view
-        </button>
+      <div className="primary-chart-header">
+        <div className="primary-chart-meta">
+          <div className="primary-chart-title">Value over time</div>
+          <div className="primary-chart-sub">
+            <span>{visibleSeriesCount} series · {totalPoints.toLocaleString()} points</span>
+            <span className="meta-sep">/</span>
+            <span className="interaction-hint">Scroll to zoom · Drag to pan</span>
+          </div>
+        </div>
+
+        <div className="primary-chart-actions">
+          <div className="legend-strip" role="toolbar" aria-label="Toggle series visibility">
+            {categories.map((cat) => {
+              const isVisible = filterState.categories.includes(cat);
+              const color = getCategoryColor(cat, categories);
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`legend-chip ${isVisible ? 'active' : 'inactive'}`}
+                  onClick={() => toggleCategory(cat)}
+                  title={`Toggle ${cat}`}
+                >
+                  <span
+                    className="legend-indicator"
+                    style={{
+                      backgroundColor: isVisible ? color : 'transparent',
+                      borderColor: color,
+                    }}
+                  />
+                  <span>{cat}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="control-button reset-view-btn"
+            onClick={handleReset}
+          >
+            Reset view
+          </button>
+        </div>
       </div>
+
       <div
         ref={containerRef}
-        style={{ position: 'relative', flex: 1, minHeight: '280px', cursor: isDragging.current ? 'grabbing' : 'grab' }}
+        className="primary-canvas-wrap"
+        style={{ cursor: isDragging.current ? 'grabbing' : 'grab' }}
       >
         <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>

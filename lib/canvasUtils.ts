@@ -155,8 +155,8 @@ export function drawYAxis(
   }
 }
 
-// Get chart colors for categories
-const CHART_COLORS = ['#2563eb', '#c2410c', '#0f766e', '#7c3aed', '#b45309'];
+// Deliberate 5-color palette for data visualization on light background (no status red/green)
+const CHART_COLORS = ['#1e40af', '#0e7490', '#7e22ce', '#c2410c', '#4d7c0f'];
 
 export function getCategoryColor(category: string, categories: string[]): string {
   const idx = categories.indexOf(category);
